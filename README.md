@@ -1,175 +1,230 @@
-# UV Light Oil Leakage Prediction System
+# 🛢️ Intelligent UV Fluorescence Oil Leak Detection System using Computer Vision
 
-An **industrial-grade UV oil leak detection system** built for Stellantis engine assembly lines. The system uses a two-stage AI pipeline to automatically detect engine oil leaks under UV illumination in real time.
+> **Developed during Internship at Stellantis (Citroën), Thiruvallur**
 
----
+## 📖 Overview
 
-## 🔬 How It Works
+The **UV Light Oil Leak Detection System** is an intelligent inspection solution that detects oil leaks in industrial equipment using **UV fluorescence technology** and **computer vision**. Fluorescent dye mixed with lubricating oil glows under ultraviolet light, allowing OpenCV-based image processing algorithms to identify and localize leaks accurately.
 
-```
-Live Camera Frame
-      │
-      ▼
- ┌──────────────────────────────┐
- │  Stage 1: YOLOv8 Detection  │  ← Detects & crops the engine blackbody region
- └──────────────────────────────┘
-      │  ROI-filtered crop
-      ▼
- ┌──────────────────────────────────────────────────────┐
- │  Stage 2: Gradient Boosting Classifier               │
- │  2137 hand-crafted UV colour features:               │
- │   • UV brightness stats (raw HSV)                    │
- │   • UV hue histogram (Hue 100–160, oil glow range)   │
- │   • 2D Hue×Saturation histogram (post-CLAHE)         │
- │   • Per-channel stats (H,S,V,L,A,B)                  │
- │   • Laplacian variance (texture)                     │
- └──────────────────────────────────────────────────────┘
-      │
-      ▼
- "OIL LEAK" | "NO LEAK" + Confidence %
-```
+This project was developed to reduce inspection time, improve maintenance quality, minimize downtime, and provide a low-cost portable inspection solution.
 
 ---
 
-## 📁 Project Structure
+# 🎯 Objectives
 
+- Detect oil leaks using UV fluorescence
+- Automate inspection using Computer Vision
+- Reduce manual inspection time
+- Improve maintenance efficiency
+- Reduce equipment downtime
+- Prevent environmental pollution
+- Support predictive maintenance
+
+---
+
+# 🚀 Features
+
+- Real-time leak detection
+- UV fluorescence inspection
+- Automatic image processing
+- Leak localization
+- High detection accuracy
+- Portable hardware setup
+- Low maintenance cost
+- Environment-friendly monitoring
+
+---
+
+# 🛠 Technologies
+
+## Hardware
+
+- UV LED Light Source
+- Camera Module
+- Arduino UNO / ESP32
+- UV Protective Filter
+- Power Supply
+- Industrial Test Surface
+
+## Software
+
+- Python
+- OpenCV
+- NumPy
+- Arduino IDE
+- VS Code
+
+---
+
+# ⚙ Working Principle
+
+1. Mix fluorescent dye with lubricating oil.
+2. Illuminate the surface using UV light.
+3. Oil traces fluoresce brightly.
+4. Capture images using a camera.
+5. Process images using OpenCV.
+6. Detect fluorescent regions.
+7. Highlight leak location.
+8. Generate inspection output.
+
+---
+
+# 🏗 System Architecture
+
+```text
++----------------+
+| UV Light Source|
++--------+-------+
+         |
+         v
++----------------+
+| Oil Leak Area  |
++--------+-------+
+         |
+         v
++----------------+
+| Camera Module  |
++--------+-------+
+         |
+         v
++----------------+
+| Image Processing|
+|    (OpenCV)    |
++--------+-------+
+         |
+         v
++----------------+
+| Leak Detection |
++--------+-------+
+         |
+         v
++----------------+
+| Alert / Report |
++----------------+
 ```
-newengil/
-├── app_v2/                      # Main application
-│   ├── core/
-│   │   ├── pipeline.py          # YOLO + GB inference engine
-│   │   ├── camera_thread.py     # Live camera frame capture thread
-│   │   ├── presence_detector.py # Vehicle presence detection
-│   │   ├── report_generator.py  # CSV + image inspection reports
-│   │   └── cloud_sync.py        # Optional cloud sync
-│   ├── ui/                      # PyQt5 dashboard UI
-│   ├── models/                  # (not tracked) best.pt + gb_classifier.pkl
-│   ├── config.json              # Camera, ROI, model path config
-│   └── main.py                  # Application entry point
+
+---
+
+# 📂 Project Structure
+
+```text
+UV-Oil-Leak-Detection/
 │
-├── retrain_classifier.py        # Full retrain from scratch
-├── retrain_with_datav2.py       # Safe incremental retrain (dedup protected)
-├── evaluate_accuracy.py         # Real-world accuracy evaluation
-├── add_to_training.py           # Utility: add specific crops to training set
-│
-├── roi_calibrator.py            # GUI tool to calibrate inspection ROI
-├── _debug_crops.py              # Debug crop extraction visually
-├── test_single_image.py         # Quick single-image inference test
-│
-├── requirements.txt             # Python dependencies
-└── .gitignore
+├── images/
+├── dataset/
+├── src/
+├── docs/
+├── results/
+├── README.md
+└── LICENSE
 ```
 
 ---
 
-## 🤖 Model Architecture
+# 📊 Detection Methodology
 
-### Gradient Boosting Classifier
-```
-StandardScaler → GradientBoostingClassifier
-  n_estimators    = 300
-  learning_rate   = 0.05
-  max_depth       = 4
-  min_samples_split = 3
-  subsample       = 0.8
-```
+## Image Acquisition
+Capture images under UV illumination.
 
-### Training Data
-- **Oil Leak (label=1):** ~155 YOLO-cropped engine images under UV
-- **No Leak (label=0):** ~318 YOLO-cropped clean engine images
-- **Augmentation:** 6× per image (brightness ±25, rotation ±5°, Gaussian noise)
-- **Effective training size:** ~2,800+ feature vectors
+## Preprocessing
+- Noise Reduction
+- Contrast Enhancement
+- Color Filtering
 
-### Cross-Validation Results
-```
-5-Fold Stratified CV:
-  Accuracy  : 94.3% ± 2.2%
-  Precision : 93.7% ± 1.9%
-  Recall    : 89.8% ± 6.0%
-  F1-Score  : 91.6% ± 3.5%
-```
+## Feature Extraction
+- Fluorescence Analysis
+- Region Segmentation
+
+## Leak Identification
+- Thresholding
+- Contour Detection
+- Leak Localization
 
 ---
 
-## 🚀 Setup & Run
+# 📈 Expected Results
 
-### 1. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Place Model Files
-```
-app_v2/models/best.pt          # YOLOv8 detection model
-app_v2/models/gb_classifier.pkl  # Trained GB classifier
-```
-
-### 3. Configure
-Edit `app_v2/config.json`:
-```json
-{
-  "camera_index": 0,
-  "model_path": "models/best.pt",
-  "clf_path": "models/gb_classifier.pkl",
-  "roi": { "x1_pct": 0.1, "y1_pct": 0.1, "x2_pct": 0.9, "y2_pct": 0.9 }
-}
-```
-
-### 4. Run Application
-```bash
-cd app_v2
-python main.py
-```
-
-### 5. Retrain Classifier
-```bash
-# Full retrain (from scratch)
-python retrain_classifier.py
-
-# Incremental retrain (add new data safely)
-python retrain_with_datav2.py
-```
-
-### 6. Evaluate Accuracy
-```bash
-python evaluate_accuracy.py
-```
+- Accurate oil leak detection
+- Faster inspection
+- Reduced downtime
+- Early failure prevention
+- Lower maintenance cost
 
 ---
 
-## 🔧 Key Features
+# 📷 Project Images
 
-| Feature | Detail |
-|---|---|
-| **ROI Filtering** | Rejects YOLO detections outside the calibrated inspection zone |
-| **Low-light Fix** | CLAHE + gamma boost for YOLO pre-processing; original frame used for GB |
-| **Background Suppression** | Removes pale white-green reflections (S<25, V>215) before feature extraction |
-| **Smart Crop Fallback** | If YOLO fails, UV-max sliding window crop ensures a valid engine region |
-| **Dedup Protection** | Incremental retraining tracks all previously trained filenames |
-| **Augmentation** | 6× augmentation for fixed-camera conditions |
+## Manufacturing Plant
+
+<img width="537" height="342" alt="Manufacturing Plant" src="https://github.com/user-attachments/assets/71b67a95-c4d0-4902-98f8-060f2c5f0098" />
 
 ---
 
-## 📦 Requirements
+## Sample Output 1
 
-```
-opencv-python
-ultralytics
-scikit-learn
-numpy
-matplotlib
-PyQt5
-```
+<img width="1920" height="1080" alt="Output1" src="https://github.com/user-attachments/assets/fe0da56c-d90c-480a-8114-be7f5c82a49a" />
 
 ---
 
-## 🏭 Deployment Context
+## Sample Output 2
 
-Deployed on standalone factory hardware at a Stellantis engine assembly line.  
-Operates in **read-only, offline mode** — no cloud dependency, no data leaves the factory network.
+<img width="1920" height="1080" alt="Output2" src="https://github.com/user-attachments/assets/beadc277-bd9d-43de-a259-f2670e0e3aa4" />
 
 ---
 
-## 📝 License
+# 💡 Applications
 
-Internal use — Stellantis UV Leak Detection Project
+- Automotive Industry
+- Manufacturing Plants
+- Oil & Gas Industry
+- Power Plants
+- Heavy Machinery
+- Aerospace
+- Marine Industry
+
+---
+
+# 📋 Advantages
+
+- Non-destructive testing
+- High accuracy
+- Cost-effective
+- Portable
+- Easy deployment
+- Fast inspection
+
+---
+
+# 🔮 Future Enhancements
+
+- AI-based leak classification
+- YOLO integration
+- Mobile app
+- IoT monitoring
+- Cloud dashboard
+- Predictive maintenance
+
+---
+
+# 👨‍💻 Developers
+
+- **Sanjay Kumar H**
+- **Devasanjay N**
+
+---
+
+# 🏢 Internship
+
+Developed during internship at **Stellantis (Citroën), Thiruvallur**.
+
+---
+
+# 📄 License
+
+MIT License
+
+---
+
+# ⭐ Support
+
+If you found this project useful, please give it a **Star ⭐**.
